@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a3a4a" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>教小万 · 内部</title>
+  <style>
+    :root {
+      --bg: #f3eee4;
+      --ink: #1a3340;
+      --muted: #5d6e76;
+      --paper: #fffdf8;
+      --line: #e4d9c8;
+      --sea: #1a3a4a;
+      --brass: #b8924a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); }
+    body {
+      font: 16px/1.5 "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      display: flex; flex-direction: column;
+    }
+    header {
+      flex: none;
+      background: var(--sea);
+      color: var(--paper);
+      padding: 16px 18px 14px;
+      padding-top: max(16px, env(safe-area-inset-top));
+    }
+    .brand { margin: 0; font-size: 11px; letter-spacing: .18em; color: var(--brass); }
+    h1 { margin: 6px 0 0; font-size: 24px; font-weight: 650; }
+    .sub { margin: 4px 0 0; opacity: .8; font-size: 13px; }
+    .sub a { color: var(--brass); }
+    .log {
+      flex: 1;
+      overflow: auto;
+      padding: 16px 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .msg {
+      max-width: 92%;
+      padding: 10px 12px;
+      border-radius: 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .bot { align-self: flex-start; background: var(--paper); border: 1px solid var(--line); }
+    .me { align-self: flex-end; background: var(--sea); color: var(--paper); }
+    .item {
+      align-self: stretch;
+      max-width: 100%;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+    .item .meta { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+    .item button {
+      margin-top: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font: inherit;
+      font-size: 12px;
+    }
+    .hint { align-self: center; color: var(--muted); font-size: 12px; text-align: center; }
+    form.bar {
+      flex: none;
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+    }
+    textarea {
+      flex: 1;
+      resize: none;
+      min-height: 44px;
+      max-height: 140px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font: inherit;
+    }
+    form.bar button {
+      border: 0;
+      background: var(--sea);
+      color: var(--paper);
+      border-radius: 14px;
+      min-width: 72px;
+      font-weight: 700;
+    }
+    .tools { display: flex; gap: 8px; padding: 0 16px 8px; }
+    .tools button {
+      flex: 1;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: 12px;
+      min-height: 36px;
+      font: inherit;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="brand">内部页 · 不要发给客人</p>
+    <h1>教小万</h1>
+    <p class="sub">写下一条事实。这台手机立刻生效。<a href="./">去试聊</a></p>
+  </header>
+
+  <div id="log" class="log"></div>
+  <div class="tools">
+    <button type="button" id="copy">复制全部知识</button>
+    <button type="button" id="clearLocal">清空本机加的</button>
+  </div>
+  <form class="bar" id="form">
+    <textarea id="input" rows="2" placeholder="例如：大东海接机大约 25–40 分钟"></textarea>
+    <button type="submit">记下</button>
+  </form>
+
+  <script>
+    const STORE = "xiaowan_kb";
+    const logEl = document.getElementById("log");
+    const input = document.getElementById("input");
+
+    function loadLocal() {
+      try { return JSON.parse(localStorage.getItem(STORE) || "[]"); }
+      catch (e) { return []; }
+    }
+    function saveLocal(items) {
+      localStorage.setItem(STORE, JSON.stringify(items));
+    }
+    function addBubble(text, cls) {
+      const div = document.createElement("div");
+      div.className = "msg " + cls;
+      div.textContent = text;
+      logEl.appendChild(div);
+    }
+    function render() {
+      logEl.innerHTML = "";
+      addBubble("这是内部教学页。你说一句事实，我记下。不要写疗效、药名、没建好的医院、公司内部指标。", "bot");
+      addBubble("本机新教的内容，用同一部手机打开小万就能用。要让所有客人看到，把内容发给我，或点「复制全部知识」发过来。", "hint");
+
+      const published = window.__published || [];
+      if (published.length) {
+        addBubble("全网已经在用的：", "hint");
+        published.forEach(function (text) {
+          const box = document.createElement("div");
+          box.className = "item";
+          box.innerHTML = "<div class=\"meta\">全网</div>";
+          const p = document.createElement("div");
+          p.textContent = text;
+          box.appendChild(p);
+          logEl.appendChild(box);
+        });
+      }
+
+      const local = loadLocal();
+      if (local.length) {
+        addBubble("这台手机新加的：", "hint");
+        local.forEach(function (row) {
+          const box = document.createElement("div");
+          box.className = "item";
+          box.innerHTML = "<div class=\"meta\">本机 · " + (row.at || "") + "</div>";
+          const p = document.createElement("div");
+          p.textContent = row.text;
+          box.appendChild(p);
+          const del = document.createElement("button");
+          del.type = "button";
+          del.textContent = "删掉这条";
+          del.onclick = function () {
+            saveLocal(loadLocal().filter(function (x) { return x.id !== row.id; }));
+            render();
+          };
+          box.appendChild(del);
+          logEl.appendChild(box);
+        });
+      }
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    document.getElementById("form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const text = (input.value || "").trim();
+      if (!text) return;
+      const items = loadLocal();
+      items.push({
+        id: Date.now().toString(36),
+        text: text,
+        at: new Date().toISOString().slice(0, 16).replace("T", " ")
+      });
+      saveLocal(items);
+      input.value = "";
+      addBubble(text, "me");
+      addBubble("记下了。同一部手机打开小万问一句，就会用到。", "bot");
+      render();
+    });
+
+    document.getElementById("copy").onclick = function () {
+      const published = window.__published || [];
+      const local = loadLocal().map(function (x) { return x.text; });
+      const all = published.concat(local).join("\n");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(all).then(function () {
+          addBubble("已复制。发给我就能写进全网版。", "bot");
+        });
+      } else {
+        addBubble(all, "bot");
+      }
+    };
+
+    document.getElementById("clearLocal").onclick = function () {
+      if (!confirm("只清空这台手机新加的，不清全网版。")) return;
+      saveLocal([]);
+      render();
+    };
+
+    fetch("./knowledge.json?t=" + Date.now())
+      .then(function (r) { return r.ok ? r.json() : { items: [] }; })
+      .then(function (data) {
+        window.__published = data.items || [];
+        render();
+      })
+      .catch(function () {
+        window.__published = [];
+        render();
+      });
+  </script>
+</body>
+</html>
