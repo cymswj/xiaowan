@@ -115,9 +115,9 @@
       "用客人使用的语言回答。中文就中文，俄语就俄语，短句，不客套堆砌。",
       "下面「已教内容」优先于泛泛说法。有冲突时用更新、更具体的那条。",
       "不知道空房或价格时，不要编数字，让客人发 Telegram / WhatsApp @pczZJ 或电话 +86 138 7663 6537 问当天。",
-      "不要谈公司内部指标、药品代发、未建成医院。不承诺疗效，不售药。"
+      "不要谈公司内部指标、药品代发、未建成医院。"
     ].join("");
-    const CHIPS = ["明天接机", "要翻译", "问公寓", "去博鳌", "Как доехать"];
+    const CHIPS = ["明天接机", "订酒店", "问公寓", "万国购", "万国食府"];
 
     const logEl = document.getElementById("log");
     const form = document.getElementById("form");
@@ -156,7 +156,7 @@
       logEl.scrollTop = logEl.scrollHeight;
     }
 
-    add("assistant", "我是小万。可以说接机、翻译、用车、订公寓。写人数和日期就行。");
+    add("assistant", "我是小万。接机、翻译、用车，也可以帮订万国酒店、万国公寓。吃饭去万国食府，购物看万国购。写人数和日期就行。");
     CHIPS.forEach(function (c) {
       const b = document.createElement("button");
       b.type = "button";
