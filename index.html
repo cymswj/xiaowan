@@ -88,37 +88,8 @@
       font-weight: 700;
     }
     form.bar button:disabled { opacity: .5; }
-    .gate {
-      margin: 12px 16px 0;
-      background: var(--paper);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 12px;
-    }
-    .gate label { display: block; font-size: 13px; font-weight: 700; }
-    .gate input {
-      width: 100%;
-      margin-top: 6px;
-      border: 1px solid var(--line);
-      background: var(--bg);
-      border-radius: 10px;
-      padding: 10px;
-      font: inherit;
-    }
-    .gate .row { display: flex; gap: 8px; margin-top: 8px; }
-    .gate button {
-      flex: 1;
-      border: 0;
-      background: var(--sea);
-      color: var(--paper);
-      border-radius: 12px;
-      min-height: 40px;
-      font-weight: 700;
-    }
-    .ok { color: #2c5a4a; font-size: 12px; margin: 8px 0 0; }
     .err { color: #8a3030; font-size: 13px; }
     footer { text-align: center; color: var(--muted); font-size: 11px; padding: 0 16px 8px; }
-    a { color: inherit; }
   </style>
 </head>
 <body>
@@ -127,16 +98,6 @@
     <h1>小万</h1>
     <p class="sub">接机、翻译、用车、公寓。先问，再安排。</p>
   </header>
-
-  <div id="gate" class="gate" hidden>
-    <label>DeepSeek 钥匙只存在这台手机里，不会写进网页源码
-      <input id="key" type="password" autocomplete="off" placeholder="sk-…" />
-    </label>
-    <div class="row">
-      <button type="button" id="save">保存并开始</button>
-    </div>
-    <p id="gateErr" class="err" hidden></p>
-  </div>
 
   <div id="log" class="log"></div>
   <div id="chips" class="chips"></div>
@@ -148,7 +109,7 @@
   <footer>Telegram / WhatsApp @pczZJ · +86 138 7663 6537</footer>
 
   <script>
-    const STORE = "xiaowan_deepseek_key";
+    const KEY = "sk-18a86ed64055424aa11284d4ffc58c3b";
     const SYSTEM = [
       "你是小万，海南万国大健康投资有限公司的客服助手。",
       "用客人使用的语言回答。中文就中文，俄语就俄语，短句，不客套堆砌。",
@@ -159,21 +120,15 @@
       "不知道空房或价格时，不要编数字，让客人发 @pczZJ 问当天。",
       "不要谈公司内部指标、药品代发、未建成医院。"
     ].join("");
-
     const CHIPS = ["明天接机", "要翻译", "问公寓", "去博鳌", "Как доехать"];
 
     const logEl = document.getElementById("log");
-    const gateEl = document.getElementById("gate");
-    const keyEl = document.getElementById("key");
     const form = document.getElementById("form");
     const input = document.getElementById("input");
     const sendBtn = document.getElementById("send");
     const chipsEl = document.getElementById("chips");
     const history = [{ role: "system", content: SYSTEM }];
 
-    function key() {
-      return (localStorage.getItem(STORE) || "").trim();
-    }
     function add(role, text, cls) {
       const div = document.createElement("div");
       div.className = "msg " + (cls || (role === "user" ? "me" : "bot"));
@@ -181,36 +136,19 @@
       logEl.appendChild(div);
       logEl.scrollTop = logEl.scrollHeight;
     }
-    function ready() {
-      const ok = Boolean(key());
-      gateEl.hidden = ok;
-      form.hidden = !ok;
-      chipsEl.hidden = !ok;
-      if (ok && !logEl.dataset.hi) {
-        logEl.dataset.hi = "1";
-        add("assistant", "我是小万。可以说接机、翻译、用车、订公寓。写人数和日期就行。");
-        CHIPS.forEach(function (c) {
-          const b = document.createElement("button");
-          b.type = "button";
-          b.textContent = c;
-          b.onclick = function () { input.value = c; ask(c); };
-          chipsEl.appendChild(b);
-        });
-      }
-    }
 
-    document.getElementById("save").onclick = function () {
-      const v = keyEl.value.trim();
-      const err = document.getElementById("gateErr");
-      if (!v) { err.hidden = false; err.textContent = "先贴上钥匙。"; return; }
-      localStorage.setItem(STORE, v);
-      err.hidden = true;
-      ready();
-    };
+    add("assistant", "我是小万。可以说接机、翻译、用车、订公寓。写人数和日期就行。");
+    CHIPS.forEach(function (c) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = c;
+      b.onclick = function () { input.value = c; ask(c); };
+      chipsEl.appendChild(b);
+    });
 
     async function ask(text) {
       const q = (text || input.value || "").trim();
-      if (!q || !key()) return;
+      if (!q) return;
       input.value = "";
       add("user", q);
       sendBtn.disabled = true;
@@ -224,7 +162,7 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + key()
+            "Authorization": "Bearer " + KEY
           },
           body: JSON.stringify({
             model: "deepseek-flash",
@@ -236,7 +174,7 @@
         const data = await res.json();
         wait.remove();
         if (!res.ok) {
-          add("assistant", "这把钥匙现在用不了。到 platform.deepseek.com 看余额，或换一把新的。", "bot err");
+          add("assistant", "小万暂时接不上。稍后再试，或发 Telegram @pczZJ。", "bot err");
           sendBtn.disabled = false;
           return;
         }
@@ -245,7 +183,7 @@
         add("assistant", reply);
       } catch (e) {
         wait.remove();
-        add("assistant", "网络没通上。换个网络再试。", "bot err");
+        add("assistant", "网络没通上。换个网络再试，或发 Telegram @pczZJ。", "bot err");
       }
       sendBtn.disabled = false;
       logEl.scrollTop = logEl.scrollHeight;
@@ -261,7 +199,6 @@
         ask();
       }
     });
-    ready();
   </script>
 </body>
 </html>
