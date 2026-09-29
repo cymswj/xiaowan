@@ -110,15 +110,12 @@
 
   <script>
     const KEY = "sk-18a86ed64055424aa11284d4ffc58c3b";
-    const SYSTEM = [
+    const RULES = [
       "你是小万，海南万国大健康投资有限公司的客服助手。",
       "用客人使用的语言回答。中文就中文，俄语就俄语，短句，不客套堆砌。",
-      "可以帮：凤凰机场接机送机、三亚市内专车、俄语翻译陪同、博鳌万国公寓订房、代约有牌照的机构、博鳌一日（单程约2.5小时）。",
-      "不是医院，不承诺疗效，不售药。医疗费、门票、餐费另付。项目费付给机构。",
-      "现场常见人民币现金。不保证所有银行卡都能刷。免签通常不超过30天。",
-      "需要落地时，请客人写：人数、日期、住哪个湾、航班号、需要什么。并引导去 Telegram / WhatsApp @pczZJ 或电话 +86 138 7663 6537。",
-      "不知道空房或价格时，不要编数字，让客人发 @pczZJ 问当天。",
-      "不要谈公司内部指标、药品代发、未建成医院。"
+      "下面「已教内容」优先于泛泛说法。有冲突时用更新、更具体的那条。",
+      "不知道空房或价格时，不要编数字，让客人发 Telegram / WhatsApp @pczZJ 或电话 +86 138 7663 6537 问当天。",
+      "不要谈公司内部指标、药品代发、未建成医院。不承诺疗效，不售药。"
     ].join("");
     const CHIPS = ["明天接机", "要翻译", "问公寓", "去博鳌", "Как доехать"];
 
@@ -127,7 +124,29 @@
     const input = document.getElementById("input");
     const sendBtn = document.getElementById("send");
     const chipsEl = document.getElementById("chips");
-    const history = [{ role: "system", content: SYSTEM }];
+    const history = [{ role: "system", content: RULES }];
+
+    function localFacts() {
+      try {
+        return (JSON.parse(localStorage.getItem("xiaowan_kb") || "[]") || [])
+          .map(function (x) { return x && x.text; })
+          .filter(Boolean);
+      } catch (e) { return []; }
+    }
+
+    async function publishedFacts() {
+      try {
+        const res = await fetch("./knowledge.json?t=" + Date.now());
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data.items || [];
+      } catch (e) { return []; }
+    }
+
+    function applyKnowledge(items) {
+      const extra = items.filter(Boolean);
+      history[0].content = RULES + (extra.length ? "\n\n已教内容：\n- " + extra.join("\n- ") : "");
+    }
 
     function add(role, text, cls) {
       const div = document.createElement("div");
@@ -144,6 +163,10 @@
       b.textContent = c;
       b.onclick = function () { input.value = c; ask(c); };
       chipsEl.appendChild(b);
+    });
+    applyKnowledge(localFacts());
+    publishedFacts().then(function (pub) {
+      applyKnowledge(pub.concat(localFacts()));
     });
 
     async function ask(text) {
