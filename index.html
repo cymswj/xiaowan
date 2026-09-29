@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a3a4a" />
+  <title>小万 · 万国助手</title>
+  <meta name="description" content="小万是海南万国大健康的客服助手。接机、翻译、用车、公寓。" />
+  <style>
+    :root {
+      --bg: #f3eee4;
+      --ink: #1a3340;
+      --muted: #5d6e76;
+      --paper: #fffdf8;
+      --line: #e4d9c8;
+      --sea: #1a3a4a;
+      --brass: #b8924a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); }
+    body {
+      font: 16px/1.5 "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      display: flex; flex-direction: column;
+    }
+    header {
+      flex: none;
+      background: var(--sea);
+      color: var(--paper);
+      padding: 16px 18px 14px;
+      padding-top: max(16px, env(safe-area-inset-top));
+    }
+    .brand { margin: 0; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--brass); }
+    h1 { margin: 6px 0 0; font-size: 26px; font-weight: 650; }
+    .sub { margin: 4px 0 0; opacity: .8; font-size: 13px; }
+    .log {
+      flex: 1;
+      overflow: auto;
+      padding: 16px 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .msg {
+      max-width: 86%;
+      padding: 10px 12px;
+      border-radius: 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .bot { align-self: flex-start; background: var(--paper); border: 1px solid var(--line); }
+    .me { align-self: flex-end; background: var(--sea); color: var(--paper); }
+    .hint { align-self: center; color: var(--muted); font-size: 12px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 8px; }
+    .chips button {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font: inherit;
+      font-size: 13px;
+    }
+    form.bar {
+      flex: none;
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+    }
+    textarea {
+      flex: 1;
+      resize: none;
+      min-height: 44px;
+      max-height: 120px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font: inherit;
+    }
+    form.bar button {
+      border: 0;
+      background: var(--sea);
+      color: var(--paper);
+      border-radius: 14px;
+      min-width: 72px;
+      font-weight: 700;
+    }
+    form.bar button:disabled { opacity: .5; }
+    .gate {
+      margin: 12px 16px 0;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .gate label { display: block; font-size: 13px; font-weight: 700; }
+    .gate input {
+      width: 100%;
+      margin-top: 6px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 10px;
+      font: inherit;
+    }
+    .gate .row { display: flex; gap: 8px; margin-top: 8px; }
+    .gate button {
+      flex: 1;
+      border: 0;
+      background: var(--sea);
+      color: var(--paper);
+      border-radius: 12px;
+      min-height: 40px;
+      font-weight: 700;
+    }
+    .ok { color: #2c5a4a; font-size: 12px; margin: 8px 0 0; }
+    .err { color: #8a3030; font-size: 13px; }
+    footer { text-align: center; color: var(--muted); font-size: 11px; padding: 0 16px 8px; }
+    a { color: inherit; }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="brand">海南万国大健康</p>
+    <h1>小万</h1>
+    <p class="sub">接机、翻译、用车、公寓。先问，再安排。</p>
+  </header>
+
+  <div id="gate" class="gate" hidden>
+    <label>DeepSeek 钥匙只存在这台手机里，不会写进网页源码
+      <input id="key" type="password" autocomplete="off" placeholder="sk-…" />
+    </label>
+    <div class="row">
+      <button type="button" id="save">保存并开始</button>
+    </div>
+    <p id="gateErr" class="err" hidden></p>
+  </div>
+
+  <div id="log" class="log"></div>
+  <div id="chips" class="chips"></div>
+
+  <form class="bar" id="form">
+    <textarea id="input" rows="1" placeholder="跟小万说：几个人、哪天、要什么"></textarea>
+    <button type="submit" id="send">发送</button>
+  </form>
+  <footer>Telegram / WhatsApp @pczZJ · +86 138 7663 6537</footer>
+
+  <script>
+    const STORE = "xiaowan_deepseek_key";
+    const SYSTEM = [
+      "你是小万，海南万国大健康投资有限公司的客服助手。",
+      "用客人使用的语言回答。中文就中文，俄语就俄语，短句，不客套堆砌。",
+      "可以帮：凤凰机场接机送机、三亚市内专车、俄语翻译陪同、博鳌万国公寓订房、代约有牌照的机构、博鳌一日（单程约2.5小时）。",
+      "不是医院，不承诺疗效，不售药。医疗费、门票、餐费另付。项目费付给机构。",
+      "现场常见人民币现金。不保证所有银行卡都能刷。免签通常不超过30天。",
+      "需要落地时，请客人写：人数、日期、住哪个湾、航班号、需要什么。并引导去 Telegram / WhatsApp @pczZJ 或电话 +86 138 7663 6537。",
+      "不知道空房或价格时，不要编数字，让客人发 @pczZJ 问当天。",
+      "不要谈公司内部指标、药品代发、未建成医院。"
+    ].join("");
+
+    const CHIPS = ["明天接机", "要翻译", "问公寓", "去博鳌", "Как доехать"];
+
+    const logEl = document.getElementById("log");
+    const gateEl = document.getElementById("gate");
+    const keyEl = document.getElementById("key");
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+    const sendBtn = document.getElementById("send");
+    const chipsEl = document.getElementById("chips");
+    const history = [{ role: "system", content: SYSTEM }];
+
+    function key() {
+      return (localStorage.getItem(STORE) || "").trim();
+    }
+    function add(role, text, cls) {
+      const div = document.createElement("div");
+      div.className = "msg " + (cls || (role === "user" ? "me" : "bot"));
+      div.textContent = text;
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    function ready() {
+      const ok = Boolean(key());
+      gateEl.hidden = ok;
+      form.hidden = !ok;
+      chipsEl.hidden = !ok;
+      if (ok && !logEl.dataset.hi) {
+        logEl.dataset.hi = "1";
+        add("assistant", "我是小万。可以说接机、翻译、用车、订公寓。写人数和日期就行。");
+        CHIPS.forEach(function (c) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = c;
+          b.onclick = function () { input.value = c; ask(c); };
+          chipsEl.appendChild(b);
+        });
+      }
+    }
+
+    document.getElementById("save").onclick = function () {
+      const v = keyEl.value.trim();
+      const err = document.getElementById("gateErr");
+      if (!v) { err.hidden = false; err.textContent = "先贴上钥匙。"; return; }
+      localStorage.setItem(STORE, v);
+      err.hidden = true;
+      ready();
+    };
+
+    async function ask(text) {
+      const q = (text || input.value || "").trim();
+      if (!q || !key()) return;
+      input.value = "";
+      add("user", q);
+      sendBtn.disabled = true;
+      history.push({ role: "user", content: q });
+      const wait = document.createElement("div");
+      wait.className = "msg bot hint";
+      wait.textContent = "小万在看…";
+      logEl.appendChild(wait);
+      try {
+        const res = await fetch("https://api.deepseek.com/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + key()
+          },
+          body: JSON.stringify({
+            model: "deepseek-flash",
+            messages: history,
+            stream: false,
+            thinking: { type: "disabled" }
+          })
+        });
+        const data = await res.json();
+        wait.remove();
+        if (!res.ok) {
+          add("assistant", "这把钥匙现在用不了。到 platform.deepseek.com 看余额，或换一把新的。", "bot err");
+          sendBtn.disabled = false;
+          return;
+        }
+        const reply = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "我这边没接到字。再发一次。";
+        history.push({ role: "assistant", content: reply });
+        add("assistant", reply);
+      } catch (e) {
+        wait.remove();
+        add("assistant", "网络没通上。换个网络再试。", "bot err");
+      }
+      sendBtn.disabled = false;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      ask();
+    });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        ask();
+      }
+    });
+    ready();
+  </script>
+</body>
+</html>
