@@ -42,67 +42,35 @@
       font: inherit;
       font-size: 12px;
     }
-    .log {
-      flex: 1;
-      overflow: auto;
-      padding: 16px 16px 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .msg {
-      max-width: 86%;
-      padding: 10px 12px;
-      border-radius: 16px;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
+    .log { flex: 1; overflow: auto; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
+    .msg { max-width: 86%; padding: 10px 12px; border-radius: 16px; white-space: pre-wrap; word-break: break-word; }
     .bot { align-self: flex-start; background: var(--paper); border: 1px solid var(--line); }
     .me { align-self: flex-end; background: var(--sea); color: var(--paper); }
     .hint { align-self: center; color: var(--muted); font-size: 12px; text-align: center; }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 8px; }
     .chips button, .orderbar button, .sheet button {
-      border: 1px solid var(--line);
-      background: var(--paper);
-      color: var(--ink);
-      border-radius: 999px;
-      padding: 7px 12px;
-      font: inherit;
-      font-size: 13px;
+      border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+      border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 13px;
     }
     .orderbar { padding: 0 16px 8px; display: flex; gap: 8px; }
     .orderbar button.main, form.bar button, .sheet .go {
-      border: 0;
-      background: var(--sea);
-      color: var(--paper);
-      border-radius: 14px;
-      font-weight: 700;
+      border: 0; background: var(--sea); color: var(--paper); border-radius: 14px; font-weight: 700;
     }
     form.bar {
-      flex: none;
-      display: flex;
-      gap: 8px;
+      flex: none; display: flex; gap: 8px;
       padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
-      background: var(--paper);
-      border-top: 1px solid var(--line);
+      background: var(--paper); border-top: 1px solid var(--line);
     }
     textarea, .sheet input, .sheet select {
-      width: 100%;
-      border: 1px solid var(--line);
-      background: var(--bg);
-      border-radius: 12px;
-      padding: 10px 12px;
-      font: inherit;
+      width: 100%; border: 1px solid var(--line); background: var(--bg);
+      border-radius: 12px; padding: 10px 12px; font: inherit;
     }
     form.bar textarea { flex: 1; resize: none; min-height: 44px; max-height: 120px; width: auto; }
     form.bar button { min-width: 72px; }
     form.bar button:disabled { opacity: .5; }
     .err { color: #8a3030; font-size: 13px; }
     footer { text-align: center; color: var(--muted); font-size: 11px; padding: 0 16px 8px; }
-    .sheet {
-      display: none;
-      padding: 0 16px 8px;
-    }
+    .sheet { display: none; padding: 0 16px 8px; }
     .sheet.open { display: grid; gap: 8px; }
     .sheet label { font-size: 12px; color: var(--muted); }
     .msg a { color: #1a5c8a; text-decoration: underline; word-break: break-all; }
@@ -120,7 +88,6 @@
       <button class="lang" type="button" id="langBtn">RU</button>
     </div>
   </header>
-
   <div id="log" class="log"></div>
   <div id="chips" class="chips"></div>
   <div class="orderbar">
@@ -141,227 +108,11 @@
     <input id="fNeed" placeholder="接机 + 送到大东海" />
     <button type="button" class="go" id="copyOrder">复制并打开 Telegram</button>
   </div>
-
   <form class="bar" id="form">
     <textarea id="input" rows="1" placeholder="在哪、哪天到、要什么"></textarea>
     <button type="submit" id="send">发送</button>
   </form>
   <footer>Telegram / WhatsApp @pczZJ · +86 138 7663 6537</footer>
-
-  <script>
-    const KEY = "sk-18a86ed64055424aa11284d4ffc58c3b";
-    const RULES = [
-      "你是小万，海南万国大健康投资有限公司的客服助手。",
-      "用客人使用的语言回答。中文就中文，俄语就俄语，短句，不客套堆砌。",
-      "开场先问：人在哪或要去哪（三亚/海口/博鳌）、哪天到、要住还是只要车。",
-      "三亚客人先说接机翻译送到湾区；海口先说万国酒店；博鳌先说公寓和食府。不要一次报完所有地方。",
-      "住宿资料以用户指定页面为准：海口酒店用携程 753874，博鳌公寓用公司页 wanguodjk.com/hotel 和携程 133686523。不要报价格。酒店：14:00后入住、13:00前退房、24小时前台、不含早餐、可停车可带宠物、有万国餐厅、无加床。公寓：单间/一房一厅/两房一厅，可做饭，退房14:00，可带宠物，24小时服务，配套有泳池健身房等。空房问当天。",
-      "万国购对外原句：万国购是购物平台：https://www.wggi.cc/ 。正品商场放心购买！不要改成别的措辞。链接必须写成完整 https://www.wggi.cc/ 。不编商品、库存、价格和免税。",
-      "下面「已教内容」优先。不知道空房或价格时不要编数字。",
-      "联系人 Telegram / WhatsApp @pczZJ，电话 +86 138 7663 6537。",
-      "治疗性、功能性项目一律转推荐人 @pczZJ 或电话 +86 138 7663 6537。另外我们还做落地接待、住宿、用餐、用车。可帮车和翻译去有牌照的机构，治疗项目费付给机构。不要说「不接诊，也不安排治疗」。不解释疗效，不编医院名。",
-      "落地可以先在三亚接。治疗去哪家机构由推荐人安排，常见会到博鳌 / 乐城，也可以三亚先住再过去。有病历可以发给推荐人，没有也能先联系。儿童孕妇同样只转推荐人。",
-    ].join("");
-
-    const UI = {
-      zh: {
-        brand: "海南万国大健康",
-        title: "小万",
-        sub: "先说在哪、哪天到。凌晨航班也能接。",
-        lang: "RU",
-        hi: "我是小万。先告诉我：你在三亚、海口还是博鳌？哪天到？要接机、住宿，还是只要车？",
-        ph: "在哪、哪天到、要什么",
-        send: "发送",
-        order: "发给接待",
-        copy: "复制并打开 Telegram",
-        chips: ["三亚接机", "凌晨航班", "海口酒店", "博鳌公寓", "万国购"],
-        lDate: "日期 / 航班",
-        lWho: "人数",
-        lWhere: "在哪",
-        lNeed: "要什么"
-      },
-      ru: {
-        brand: "Хайнань Ваньго",
-        title: "Сяо Вань",
-        sub: "Сначала: где вы и когда прилёт. Ночные рейсы тоже встречаем.",
-        lang: "中文",
-        hi: "Я Сяо Вань. Напишите: Санья, Хайкоу или Боао? Дата прилёта? Трансфер, жильё или только машина?",
-        ph: "Где вы, дата, что нужно",
-        send: "Отправить",
-        order: "Отправить приёму",
-        copy: "Скопировать и открыть Telegram",
-        chips: ["Трансфер Санья", "Ночной рейс", "Отель Хайкоу", "Апартаменты Боао", "Wanguogou"],
-        lDate: "Дата / рейс",
-        lWho: "Сколько человек",
-        lWhere: "Где",
-        lNeed: "Что нужно"
-      }
-    };
-
-    let lang = /[а-яё]/i.test(navigator.language || "") ? "ru" : "zh";
-    const logEl = document.getElementById("log");
-    const form = document.getElementById("form");
-    const input = document.getElementById("input");
-    const sendBtn = document.getElementById("send");
-    const chipsEl = document.getElementById("chips");
-    const history = [{ role: "system", content: RULES }];
-
-    function t() { return UI[lang]; }
-    function paint() {
-      const u = t();
-      document.documentElement.lang = lang === "ru" ? "ru" : "zh-CN";
-      document.getElementById("brand").textContent = u.brand;
-      document.getElementById("title").textContent = u.title;
-      document.getElementById("sub").textContent = u.sub;
-      document.getElementById("langBtn").textContent = u.lang;
-      document.getElementById("openOrder").textContent = u.order;
-      document.getElementById("copyOrder").textContent = u.copy;
-      document.getElementById("lDate").textContent = u.lDate;
-      document.getElementById("lWho").textContent = u.lWho;
-      document.getElementById("lWhere").textContent = u.lWhere;
-      document.getElementById("lNeed").textContent = u.lNeed;
-      input.placeholder = u.ph;
-      sendBtn.textContent = u.send;
-      chipsEl.innerHTML = "";
-      u.chips.forEach(function (c) {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.textContent = c;
-        b.onclick = function () { input.value = c; ask(c); };
-        chipsEl.appendChild(b);
-      });
-    }
-
-    function add(role, text, cls) {
-      const div = document.createElement("div");
-      div.className = "msg " + (cls || (role === "user" ? "me" : "bot"));
-      const re = /(https?:\/\/[^\s]+)/g;
-      let last = 0, m;
-      while ((m = re.exec(text))) {
-        if (m.index > last) div.appendChild(document.createTextNode(text.slice(last, m.index)));
-        let url = m[1];
-        let tail = "";
-        const cut = url.match(/^(.*?)([)）\]】，。,.!！;；]+)$/);
-        if (cut) { url = cut[1]; tail = cut[2]; }
-        const a = document.createElement("a");
-        a.href = url;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.textContent = url;
-        div.appendChild(a);
-        if (tail) div.appendChild(document.createTextNode(tail));
-        last = m.index + m[1].length;
-      }
-      if (last < text.length) div.appendChild(document.createTextNode(text.slice(last)));
-      if (!text) div.textContent = "";
-      logEl.appendChild(div);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    function localFacts() {
-      try {
-        return (JSON.parse(localStorage.getItem("xiaowan_kb") || "[]") || [])
-          .map(function (x) { return x && x.text; })
-          .filter(Boolean);
-      } catch (e) { return []; }
-    }
-    async function publishedFacts() {
-      try {
-        const res = await fetch("./knowledge.json?t=" + Date.now());
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.items || [];
-      } catch (e) { return []; }
-    }
-    function applyKnowledge(items) {
-      const extra = items.filter(Boolean);
-      history[0].content = RULES + (extra.length ? "\n\n已教内容：\n- " + extra.join("\n- ") : "");
-    }
-
-    document.getElementById("langBtn").onclick = function () {
-      lang = lang === "zh" ? "ru" : "zh";
-      paint();
-    };
-    document.getElementById("openOrder").onclick = function () {
-      document.getElementById("sheet").classList.toggle("open");
-    };
-    document.getElementById("copyOrder").onclick = function () {
-      const when = document.getElementById("fWhen").value.trim() || "待补";
-      const who = document.getElementById("fWho").value.trim() || "待补";
-      const where = document.getElementById("fWhere").value;
-      const need = document.getElementById("fNeed").value.trim() || "待补";
-      const text = "小万订单\\n日期/航班：" + when + "\\n人数：" + who + "\\n在：" + where + "\\n要：" + need + "\\n联系：@pczZJ  +86 138 7663 6537";
-      const go = function () {
-        location.href = "https://t.me/pczZJ?text=" + encodeURIComponent(text.replace(/\\n/g, "\n"));
-      };
-      const plain = text.replace(/\\n/g, "\n");
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(plain).then(go, go);
-      } else {
-        go();
-      }
-    };
-
-    async function ask(text) {
-      const q = (text || input.value || "").trim();
-      if (!q) return;
-      input.value = "";
-      add("user", q);
-      sendBtn.disabled = true;
-      history.push({ role: "user", content: q });
-      const wait = document.createElement("div");
-      wait.className = "msg bot hint";
-      wait.textContent = lang === "ru" ? "Сяо Вань смотрит…" : "小万在看…";
-      logEl.appendChild(wait);
-      try {
-        const res = await fetch("https://api.deepseek.com/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + KEY
-          },
-          body: JSON.stringify({
-            model: "deepseek-flash",
-            messages: history,
-            stream: false,
-            thinking: { type: "disabled" }
-          })
-        });
-        const data = await res.json();
-        wait.remove();
-        if (!res.ok) {
-          add("assistant", lang === "ru" ? "Сейчас не отвечает. Напишите @pczZJ." : "小万暂时接不上。发 Telegram @pczZJ。", "bot err");
-          sendBtn.disabled = false;
-          return;
-        }
-        const reply = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || (lang === "ru" ? "Повторите, пожалуйста." : "再发一次。");
-        history.push({ role: "assistant", content: reply });
-        add("assistant", reply);
-      } catch (e) {
-        wait.remove();
-        add("assistant", lang === "ru" ? "Нет сети. Напишите @pczZJ." : "网络没通上。发 Telegram @pczZJ。", "bot err");
-      }
-      sendBtn.disabled = false;
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      ask();
-    });
-    input.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        ask();
-      }
-    });
-
-    paint();
-    add("assistant", t().hi);
-    applyKnowledge(localFacts());
-    publishedFacts().then(function (pub) {
-      applyKnowledge(pub.concat(localFacts()));
-    });
-  </script>
+  <script src="./app.js"></script>
 </body>
 </html>
